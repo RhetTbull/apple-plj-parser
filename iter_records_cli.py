@@ -14,60 +14,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, Optional, Any, Tuple
 
+from google.protobuf.message import DecodeError
+
+from journal_pb2 import JournalEntryHeader as JournalEntryHeaderPB
+
 MAGIC = b"bplist00"
 PREFIX_SIZE = 5
 HEADER_SENTINEL = 0x40
 HEADER_SIZE_MAX = 255  # header length stored in single byte
-MAX_VARINT_SHIFT = 63
-MAX_PROTO_OBJECTS = 5_000_000
-
-
-# ---------------------------------------------------------------------------
-# Protobuf utilities
-# ---------------------------------------------------------------------------
-
-def read_varint(data: memoryview, offset: int) -> Tuple[Optional[int], int]:
-    """Decode a protobuf-style unsigned varint."""
-    result = 0
-    shift = 0
-    length = len(data)
-    while offset < length and shift <= MAX_VARINT_SHIFT:
-        byte = data[offset]
-        offset += 1
-        result |= (byte & 0x7F) << shift
-        if (byte & 0x80) == 0:
-            return result, offset
-        shift += 7
-    return None, offset
-
-
-def skip_field(data: memoryview, offset: int, wire_type: int) -> Optional[int]:
-    """Skip over an unknown protobuf field."""
-    if wire_type == 0:  # varint
-        _, offset = read_varint(data, offset)
-        return offset
-    if wire_type == 1:  # 64-bit
-        return offset + 8 if offset + 8 <= len(data) else None
-    if wire_type == 2:  # length-delimited
-        length, offset = read_varint(data, offset)
-        if length is None or offset + length > len(data):
-            return None
-        return offset + length
-    if wire_type == 5:  # 32-bit
-        return offset + 4 if offset + 4 <= len(data) else None
-    if wire_type == 3:  # start group (deprecated but handle defensively)
-        while offset < len(data):
-            key, offset = read_varint(data, offset)
-            if key is None:
-                return None
-            wt = key & 0x7
-            if wt == 4:
-                return offset
-            offset = skip_field(data, offset, wt)
-            if offset is None:
-                return None
-        return None
-    return None
 
 
 @dataclass
@@ -87,78 +41,26 @@ class HeaderParseError(RuntimeError):
 
 def parse_header(raw: bytes) -> JournalHeader:
     """Parse the binary protobuf header attached to each journal entry."""
-    data = memoryview(raw)
-    offset = 0
+    header_pb = JournalEntryHeaderPB()
+    try:
+        header_pb.ParseFromString(raw)
+    except DecodeError as exc:  # pragma: no cover - corrupted headers are rare
+        raise HeaderParseError(str(exc)) from exc
 
-    entry_type = 0
-    payload_uuid: Optional[uuid.UUID] = None
-    payload_id: Optional[str] = None
-    payload_version = 0
-    payload_length = 0
-    payload_crc = 0
-    nil_properties: list[str] = []
+    payload_uuid = None
+    if header_pb.HasField("payload_uuid") and len(header_pb.payload_uuid) == 16:
+        payload_uuid = uuid.UUID(bytes=header_pb.payload_uuid)
 
-    while offset < len(data):
-        key, offset = read_varint(data, offset)
-        if key is None:
-            raise HeaderParseError("failed to read header field key")
-        field_number = key >> 3
-        wire_type = key & 0x7
-
-        if field_number == 1:  # entryType (varint)
-            value, offset = read_varint(data, offset)
-            if value is None:
-                raise HeaderParseError("invalid entryType")
-            entry_type = value
-        elif field_number == 2:  # payloadUUID (length-delimited 16 bytes)
-            length, offset = read_varint(data, offset)
-            if length is None or offset + length > len(data):
-                raise HeaderParseError("invalid payloadUUID length")
-            uuid_bytes = data[offset:offset + length].tobytes()
-            offset += length
-            if len(uuid_bytes) == 16:
-                payload_uuid = uuid.UUID(bytes=uuid_bytes)
-        elif field_number == 3:  # payloadID string
-            length, offset = read_varint(data, offset)
-            if length is None or offset + length > len(data):
-                raise HeaderParseError("invalid payloadID length")
-            payload_id = data[offset:offset + length].tobytes().decode("utf-8")
-            offset += length
-        elif field_number == 4:  # payloadVersion (varint)
-            value, offset = read_varint(data, offset)
-            if value is None:
-                raise HeaderParseError("invalid payloadVersion")
-            payload_version = value
-        elif field_number == 5:  # payloadLength (varint)
-            value, offset = read_varint(data, offset)
-            if value is None:
-                raise HeaderParseError("invalid payloadLength")
-            payload_length = value
-        elif field_number == 6:  # payloadCRC (varint)
-            value, offset = read_varint(data, offset)
-            if value is None:
-                raise HeaderParseError("invalid payloadCRC")
-            payload_crc = value & 0xFFFFFFFF
-        elif field_number == 7:  # nilProperties repeated string
-            length, offset = read_varint(data, offset)
-            if length is None or offset + length > len(data):
-                raise HeaderParseError("invalid nil property entry")
-            prop = data[offset:offset + length].tobytes().decode("utf-8")
-            nil_properties.append(prop)
-            offset += length
-        else:
-            offset = skip_field(data, offset, wire_type)
-            if offset is None:
-                raise HeaderParseError(f"unsupported header field {field_number}")
+    payload_id = header_pb.payload_id if header_pb.HasField("payload_id") else None
 
     return JournalHeader(
-        entry_type=entry_type,
+        entry_type=header_pb.entry_type if header_pb.HasField("entry_type") else 0,
         payload_uuid=payload_uuid,
         payload_id=payload_id,
-        payload_version=payload_version,
-        payload_length=payload_length,
-        payload_crc=payload_crc,
-        nil_properties=nil_properties,
+        payload_version=header_pb.payload_version if header_pb.HasField("payload_version") else 0,
+        payload_length=header_pb.payload_length if header_pb.HasField("payload_length") else 0,
+        payload_crc=header_pb.payload_crc if header_pb.HasField("payload_crc") else 0,
+        nil_properties=list(header_pb.nil_properties),
     )
 
 

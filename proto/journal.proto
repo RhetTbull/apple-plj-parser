@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package plj;
+
+message JournalEntryHeader {
+  optional uint64 entry_type = 1;
+  optional bytes payload_uuid = 2;
+  optional string payload_id = 3;
+  optional uint64 payload_version = 4;
+  optional uint64 payload_length = 5;
+  optional uint32 payload_crc = 6;
+  repeated string nil_properties = 7;
+}
