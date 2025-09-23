@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <zlib.h>
+#include <uuid/uuid.h>
+#include <string.h>
 
 @interface PLJournalEntryPayloadIDFactory : NSObject
 + (id)payloadIDWithUUIDString:(NSString *)uuidString;
@@ -311,6 +313,25 @@ static id BuildPayloadIdentifier(NSData *uuidData, NSString *stringID) {
     return nil;
 }
 
+static NSArray<NSString *> *DecodeAssetUUIDs(NSData *assetsData) {
+    if (!assetsData || assetsData.length == 0 || assetsData.length % 16 != 0) {
+        return nil;
+    }
+
+    NSMutableArray<NSString *> *uuids = [NSMutableArray array];
+    const uint8_t *bytes = assetsData.bytes;
+    NSUInteger count = assetsData.length / 16;
+
+    for (NSUInteger i = 0; i < count; i++) {
+        uuid_t uuidBytes;
+        memcpy(uuidBytes, &bytes[i * 16], 16);
+        NSUUID *uuid = [[NSUUID alloc] initWithUUIDBytes:uuidBytes];
+        [uuids addObject:uuid.UUIDString];
+    }
+
+    return [uuids copy];
+}
+
 static NSDictionary *RawPayloadAttributes(id payload) {
     if ([payload respondsToSelector:@selector(rawPayloadAttributes)]) {
         return [payload valueForKey:@"rawPayloadAttributes"];
@@ -442,7 +463,19 @@ int main(int argc, const char * argv[]) {
             } else if (payload) {
                 NSDictionary *attributes = RawPayloadAttributes(payload);
                 if (attributes.count > 0) {
-                    NSLog(@"  attributes: %@", attributes);
+                    // Check if this is an Album payload and decode assets UUIDs
+                    NSMutableDictionary *displayAttributes = [attributes mutableCopy];
+                    NSData *assetsData = attributes[@"assets"];
+                    if (assetsData && [assetsData isKindOfClass:[NSData class]] &&
+                        ([className isEqualToString:@"PLAlbumJournalEntryPayload"] ||
+                         [[[url lastPathComponent] stringByDeletingPathExtension] hasPrefix:@"Album"])) {
+                        NSArray<NSString *> *assetUUIDs = DecodeAssetUUIDs(assetsData);
+                        if (assetUUIDs) {
+                            displayAttributes[@"assets_decoded"] = assetUUIDs;
+                            displayAttributes[@"asset_count"] = @(assetUUIDs.count);
+                        }
+                    }
+                    NSLog(@"  attributes: %@", displayAttributes);
                 } else {
                     NSLog(@"  payload: %@", payload);
                 }
