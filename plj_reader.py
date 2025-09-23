@@ -12,7 +12,7 @@ import uuid
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator, Optional, Any, Tuple
+from typing import Any, Iterator, Optional, Tuple
 
 from google.protobuf.message import DecodeError
 
@@ -57,8 +57,12 @@ def parse_header(raw: bytes) -> JournalHeader:
         entry_type=header_pb.entry_type if header_pb.HasField("entry_type") else 0,
         payload_uuid=payload_uuid,
         payload_id=payload_id,
-        payload_version=header_pb.payload_version if header_pb.HasField("payload_version") else 0,
-        payload_length=header_pb.payload_length if header_pb.HasField("payload_length") else 0,
+        payload_version=(
+            header_pb.payload_version if header_pb.HasField("payload_version") else 0
+        ),
+        payload_length=(
+            header_pb.payload_length if header_pb.HasField("payload_length") else 0
+        ),
         payload_crc=header_pb.payload_crc if header_pb.HasField("payload_crc") else 0,
         nil_properties=list(header_pb.nil_properties),
     )
@@ -67,6 +71,7 @@ def parse_header(raw: bytes) -> JournalHeader:
 # ---------------------------------------------------------------------------
 # Payload decoding helpers
 # ---------------------------------------------------------------------------
+
 
 def _decode_bytes(data: bytes) -> Tuple[Any, str]:
     """Decode raw bytes into a richer Python object when possible."""
@@ -89,7 +94,6 @@ def _decode_bytes(data: bytes) -> Tuple[Any, str]:
             pass
 
     return data, "bytes"
-
 
 
 def _normalize(obj: Any) -> Any:
@@ -160,7 +164,9 @@ class JournalRecord:
             "payloadLength": self.header.payload_length,
             "payloadCRC": self.header.payload_crc,
             "crcMatches": self.crc_matches,
-            "payloadUUID": str(self.header.payload_uuid) if self.header.payload_uuid else None,
+            "payloadUUID": (
+                str(self.header.payload_uuid) if self.header.payload_uuid else None
+            ),
             "payloadID": self.header.payload_id,
             "nilProperties": self.header.nil_properties,
             "payloadKind": self.payload_kind,
@@ -172,7 +178,10 @@ class JournalRecord:
 # Record iterator
 # ---------------------------------------------------------------------------
 
-def iter_records(path: str | Path, *, decode_payload: bool = True) -> Iterator[JournalRecord]:
+
+def iter_records(
+    path: str | Path, *, decode_payload: bool = True
+) -> Iterator[JournalRecord]:
     data = memoryview(Path(path).read_bytes())
     offset = 0
     index = 0
@@ -181,12 +190,16 @@ def iter_records(path: str | Path, *, decode_payload: bool = True) -> Iterator[J
     while offset + PREFIX_SIZE <= length:
         sentinel = data[offset]
         if sentinel != HEADER_SENTINEL:
-            raise RuntimeError(f"unexpected sentinel 0x{sentinel:02x} at offset 0x{offset:x}")
+            raise RuntimeError(
+                f"unexpected sentinel 0x{sentinel:02x} at offset 0x{offset:x}"
+            )
 
         header_checksum = struct.unpack_from("<I", data, offset + 1)[0]
         header_length = data[offset + 4]
         if header_length == 0 or header_length > HEADER_SIZE_MAX:
-            raise RuntimeError(f"invalid header length {header_length} at offset 0x{offset:x}")
+            raise RuntimeError(
+                f"invalid header length {header_length} at offset 0x{offset:x}"
+            )
 
         header_start = offset + PREFIX_SIZE
         header_end = header_start + header_length
@@ -203,12 +216,17 @@ def iter_records(path: str | Path, *, decode_payload: bool = True) -> Iterator[J
 
         payload_bytes = data[payload_start:payload_end].tobytes()
         computed_crc = zlib.crc32(payload_bytes) & 0xFFFFFFFF
-        crc_matches = (header.payload_length == 0) or (computed_crc == header.payload_crc)
+        crc_matches = (header.payload_length == 0) or (
+            computed_crc == header.payload_crc
+        )
 
         if decode_payload and payload_bytes:
             decoded, payload_kind = _decode_bytes(payload_bytes)
         else:
-            decoded, payload_kind = (payload_bytes, "bytes" if payload_bytes else "empty")
+            decoded, payload_kind = (
+                payload_bytes,
+                "bytes" if payload_bytes else "empty",
+            )
 
         record = JournalRecord(
             index=index,
@@ -233,13 +251,24 @@ def iter_records(path: str | Path, *, decode_payload: bool = True) -> Iterator[J
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Decode Photos PLJ journal files")
     parser.add_argument("path", help="Path to the .plj file")
     parser.add_argument("--limit", type=int, default=None, help="Stop after N records")
-    parser.add_argument("--no-payload", action="store_true", help="Do not decode payload contents")
-    parser.add_argument("--json", action="store_true", help="Emit one JSON object per record")
-    parser.add_argument("--keys", type=int, metavar="N", default=5, help="Show up to N top-level keys in summary mode")
+    parser.add_argument(
+        "--no-payload", action="store_true", help="Do not decode payload contents"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit one JSON object per record"
+    )
+    parser.add_argument(
+        "--keys",
+        type=int,
+        metavar="N",
+        default=5,
+        help="Show up to N top-level keys in summary mode",
+    )
 
     args = parser.parse_args()
 
