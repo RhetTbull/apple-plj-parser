@@ -541,6 +541,33 @@ static id _Nullable DecodeBinaryPlist(NSData *_Nonnull data) {
 }
 
 /**
+ * Decodes packed UUID data into an array of UUID strings
+ * @param data The binary data containing packed 16-byte UUIDs
+ * @return Array of UUID strings, or nil if data length is invalid
+ */
+static NSArray<NSString *> *_Nullable DecodePackedUUIDs(NSData *_Nonnull data) {
+    NSUInteger length = data.length;
+    if (length % 16 != 0) {
+        // Data length must be multiple of 16 (UUID size)
+        return nil;
+    }
+
+    NSUInteger uuidCount = length / 16;
+    NSMutableArray<NSString *> *uuids = [[NSMutableArray alloc] initWithCapacity:uuidCount];
+
+    const uint8_t *bytes = (const uint8_t *)data.bytes;
+    for (NSUInteger i = 0; i < uuidCount; i++) {
+        const uint8_t *uuidBytes = &bytes[i * 16];
+
+        // Create UUID from raw bytes
+        NSUUID *uuid = [[NSUUID alloc] initWithUUIDBytes:uuidBytes];
+        [uuids addObject:uuid.UUIDString];
+    }
+
+    return [uuids copy];
+}
+
+/**
  * Converts an object to a JSON-serializable representation
  * @param object The object to convert
  * @return JSON-serializable object
@@ -799,6 +826,45 @@ static NSArray<PLJEntry *> *_Nullable ProcessAllEntries(NSFileHandle *_Nonnull h
                                 displayAttributes[@"mediaMetadata_base64"] = [mediaMetadataData base64EncodedStringWithOptions:0];
                                 // Remove the original binary data to avoid double encoding
                                 [displayAttributes removeObjectForKey:@"mediaMetadata"];
+                            }
+                        }
+
+                        // Special handling for photosGraphData binary plist decoding
+                        NSData *photosGraphData = attributes[@"photosGraphData"];
+                        if (photosGraphData && [photosGraphData isKindOfClass:[NSData class]]) {
+                            id decodedGraphData = DecodeBinaryPlist(photosGraphData);
+                            if (decodedGraphData) {
+                                displayAttributes[@"photosGraphData_decoded"] = decodedGraphData;
+                                // Keep the original as base64 for reference
+                                displayAttributes[@"photosGraphData_base64"] = [photosGraphData base64EncodedStringWithOptions:0];
+                                // Remove the original binary data to avoid double encoding
+                                [displayAttributes removeObjectForKey:@"photosGraphData"];
+                            }
+                        }
+
+                        // Special handling for representativeAssets UUID decoding
+                        NSData *representativeAssetsData = attributes[@"representativeAssets"];
+                        if (representativeAssetsData && [representativeAssetsData isKindOfClass:[NSData class]]) {
+                            NSArray<NSString *> *decodedUUIDs = DecodePackedUUIDs(representativeAssetsData);
+                            if (decodedUUIDs) {
+                                displayAttributes[@"representativeAssets_decoded"] = decodedUUIDs;
+                                // Keep the original as base64 for reference
+                                displayAttributes[@"representativeAssets_base64"] = [representativeAssetsData base64EncodedStringWithOptions:0];
+                                // Remove the original binary data to avoid double encoding
+                                [displayAttributes removeObjectForKey:@"representativeAssets"];
+                            }
+                        }
+
+                        // Special handling for curatedAssets UUID decoding
+                        NSData *curatedAssetsData = attributes[@"curatedAssets"];
+                        if (curatedAssetsData && [curatedAssetsData isKindOfClass:[NSData class]]) {
+                            NSArray<NSString *> *decodedUUIDs = DecodePackedUUIDs(curatedAssetsData);
+                            if (decodedUUIDs) {
+                                displayAttributes[@"curatedAssets_decoded"] = decodedUUIDs;
+                                // Keep the original as base64 for reference
+                                displayAttributes[@"curatedAssets_base64"] = [curatedAssetsData base64EncodedStringWithOptions:0];
+                                // Remove the original binary data to avoid double encoding
+                                [displayAttributes removeObjectForKey:@"curatedAssets"];
                             }
                         }
 
