@@ -524,6 +524,23 @@ static NSDictionary *_Nullable RawPayloadAttributes(id _Nullable payload) {
 #pragma mark - JSON Conversion
 
 /**
+ * Decodes binary plist data
+ * @param data The binary plist data to decode
+ * @return Decoded object, or nil if decoding fails
+ */
+static id _Nullable DecodeBinaryPlist(NSData *_Nonnull data) {
+    NSError *error = nil;
+    id plist = [NSPropertyListSerialization propertyListWithData:data
+                                                         options:NSPropertyListImmutable
+                                                          format:NULL
+                                                           error:&error];
+    if (error) {
+        return nil;
+    }
+    return plist;
+}
+
+/**
  * Converts an object to a JSON-serializable representation
  * @param object The object to convert
  * @return JSON-serializable object
@@ -769,6 +786,19 @@ static NSArray<PLJEntry *> *_Nullable ProcessAllEntries(NSFileHandle *_Nonnull h
                             if (assetUUIDs) {
                                 displayAttributes[@"assets_decoded"] = assetUUIDs;
                                 displayAttributes[@"asset_count"] = @(assetUUIDs.count);
+                            }
+                        }
+
+                        // Special handling for mediaMetadata binary plist decoding
+                        NSData *mediaMetadataData = attributes[@"mediaMetadata"];
+                        if (mediaMetadataData && [mediaMetadataData isKindOfClass:[NSData class]]) {
+                            id decodedMetadata = DecodeBinaryPlist(mediaMetadataData);
+                            if (decodedMetadata) {
+                                displayAttributes[@"mediaMetadata_decoded"] = decodedMetadata;
+                                // Keep the original as base64 for reference
+                                displayAttributes[@"mediaMetadata_base64"] = [mediaMetadataData base64EncodedStringWithOptions:0];
+                                // Remove the original binary data to avoid double encoding
+                                [displayAttributes removeObjectForKey:@"mediaMetadata"];
                             }
                         }
 
