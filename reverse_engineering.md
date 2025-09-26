@@ -46,6 +46,68 @@ So now we know that PBCodable is a protocol buffer, and we can use it to decode 
 
 Use [protoscope](https://github.com/protocolbuffers/protoscope)
 
+```bash
+protoscope -all-fields-are-messages -explicit-wire-types example_data/Asset-change.plj | head
+8:VARINT 63
+`ae0020080112106817b3aff5174badad0419ce162e52f020ac0228fc0430a2b9fac40862706c6973`
+`743030d10102597265736f7572636573a4031f272dde0405060708090a0b0c0d0e0f101112131415`
+```
+
+
+```
+$ dd if=example_data/Album-change.plj bs=1 skip=5 count=500 status=none | protoscope -all-fields-are-messages -explicit-wire-types
+1:VARINT 0
+2:LEN {
+  9:VARINT 61
+  12:I32 33.43463i32  # 0x4205bd10i32
+  82774:SGRSGROUP
+  `096694c9c075`
+}
+4:VARINT 1
+5:VARINT 380
+6:VARINT 1160857585
+12:LEN {
+  13:EGROUP
+  13:I64 3.524374304638213e-294   # 0x30201dc30307473i64
+  0:EGROUP
+  0:I32 1.6373707e-33i32  # 0x9080706i32
+  1:LEN {
+    1:EGROUP
+    1:I32 1.1364236e-28i32  # 0x11100f0ei32
+    `1213141512`
+  }
+  `16175f1013637573746f6d536f7274417363656e64696e675f101a696d706f72746564427942756e`
+  `646c654964656e746966696572566173736574735f10106c6173744d6f6469666965644461746559`
+  `636c6f`
+}
+14:I32 873590.25i32   # 0x49554764i32
+8:EGROUP
+11:I64 6.323052381170846e233  # 0x7079746f746f7270i64
+12:I32 7.398466e31i32         # 0x74697455i32
+13:EGROUP
+12:I32 4.095878e12i32   # 0x546e6957i32
+14:LEN {
+  14:SGRSGROUP
+  13:VARINT 93
+  12:SGRSGROUP
+  14:I32 4.631731e27i32   # 0x6d6f7473i32
+  10:SGRSGROUP
+  `6f72744b65795670696e6e6564546b696e645c6372656174696f6e4461746510015f1013636f6d2e`
+  `627572626e2e696e7374616772616d4f101013d4be64b05e4852958a60bc661d8a823341c6fe7628`
+  `3a40295f102443`
+}
+7:I64 4.299747047486346e-38   # 0x382d433744383341i64
+8:LEN {
+  6:I32 0.00017090207i32  # 0x3933342di32
+  `462d383835422d464132363736463233413538100059496e7374616772616d08100010023341c6fe`
+  `7648156aa50008`
+}
+```
+
+First tag isn't valid: 8:VARINT 15024
+
+Looks like there's 5 bytes at beginning of protobuf data, always starts with 0x40 then 4 bytes
+
 Turning this into a protocol buffer spec:
 
 ```
@@ -61,18 +123,30 @@ message JournalEntryHeader {
 ```
 
 ```
-$ protoscope -explicit-wire-types -all-fields-are-messages example_data/Asset-snapshot.plj | head
-8:VARINT 15024
-0:VARINT 32
-1:VARINT 0
-2:LEN {`c721de0280524b4f9187f10fae92b33b`}
-4:VARINT 300
-5:VARINT 3273
-6:VARINT 1667790900
-12:LEN {
-  13:EGROUP
-  13:I64 2.634414439881681e-302   # 0x15210df30307473i64
+pljreader on  main [!?] is 📦 v0.1.0 via 🐍 v3.13.2 (pljreader)
+❯ python protobuf_parser.py example_data/Keyword-change.plj 5
+Tag: 1, Wire Type: 0, Value: 0
+Tag: 2, Wire Type: 2, Length: 16, Value (hex): 63d87a5f1e50471a810ad49ae7017564
+Tag: 4, Wire Type: 0, Value: 1
+Tag: 5, Wire Type: 0, Value: 57
+Tag: 6, Wire Type: 0, Value: 1298539105
+Tag: 12, Wire Type: 2, Length: 112, Value (hex): 6c6973743030d10102557469746c65544c616e65080b1100000000000001010000000000000003000000000000000000000000000000164074d5001e0800121060c0c4b7c4f04624bdbff9e2d6d93cda2001283a30faa3e0b30362706c6973743030d10102557469746c655557617465
+Tag: 14, Wire Type: 2, Length: 8, Value (hex): 0b11000000000000
+Tag: 0, Wire Type: 1, Value: 1
+Tag: 0, Wire Type: 3 - Error: Unsupported wire type 3
+
+pljreader on  main [!?] is 📦 v0.1.0 via 🐍 v3.13.2 (pljreader)
+❯ python protobuf_parser.py example_data/Album-change.plj 5
+Tag: 1, Wire Type: 0, Value: 0
+Tag: 2, Wire Type: 2, Length: 16, Value (hex): 483d6510bd0542b3b528096694c9c075
+Tag: 4, Wire Type: 0, Value: 1
+Tag: 5, Wire Type: 0, Value: 380
+Tag: 6, Wire Type: 0, Value: 1160857585
+Tag: 12, Wire Type: 2, Length: 112, Value (hex): 6c6973743030dc0102030405060708090a0b0c0d0e0f1011121314151216175f1013637573746f6d536f7274417363656e64696e675f101a696d706f72746564427942756e646c654964656e746966696572566173736574735f10106c6173744d6f6469666965644461746559636c6f
+Tag: 14, Wire Type: 5, Value: 1230325604
+Tag: 8, Wire Type: 4 - Error: Unsupported wire type 4
 ```
+
 
 For album assets, curatedAssets, and representativeAssets, these were binary data with no indication what they were. I looked at albums and noticed the length was always 16 bytes * number of assets. They are packed UUIDs into a single NSData object.
 

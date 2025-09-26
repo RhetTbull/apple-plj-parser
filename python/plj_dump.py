@@ -17,6 +17,13 @@ Author: Claude Code
 Version: 2.0
 """
 
+# /// script
+# dependencies = [
+#   "pyobjc-core>=10.0",
+#   "pyobjc-framework-CoreServices",
+# ]
+# ///
+
 import argparse
 import base64
 import json
@@ -28,29 +35,18 @@ import uuid
 import zlib
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-# PyObjC imports with error handling
-try:
-    from Foundation import (
-        NSURL,
-        NSUUID,
-        NSData,
-        NSError,
-        NSMutableArray,
-        NSPropertyListImmutable,
-        NSPropertyListSerialization,
-        NSSet,
-        NSString,
-    )
-
-    import objc
-
-    PYOBJC_AVAILABLE = True
-except ImportError:
-    print(
-        "Warning: PyObjC not available. Framework features will be disabled.",
-        file=sys.stderr,
-    )
-    PYOBJC_AVAILABLE = False
+import objc
+from Foundation import (
+    NSURL,
+    NSUUID,
+    NSData,
+    NSError,
+    NSMutableArray,
+    NSPropertyListImmutable,
+    NSPropertyListSerialization,
+    NSSet,
+    NSString,
+)
 
 
 class PLJDumpError(Exception):
@@ -81,8 +77,7 @@ class FrameworkLoader:
         self.framework_loaded = False
         self.payload_classes = {}
 
-        if PYOBJC_AVAILABLE:
-            self._try_load_framework()
+        self._try_load_framework()
 
     def _try_load_framework(self):
         """Attempt to load PhotoLibraryServices framework."""
@@ -100,10 +95,6 @@ class FrameworkLoader:
                         module_globals=globals(),
                     )
                     self.framework_loaded = True
-                    print(
-                        f"Successfully loaded PhotoLibraryServices from {path}",
-                        file=sys.stderr,
-                    )
                     break
             except Exception as e:
                 continue
@@ -116,7 +107,7 @@ class FrameworkLoader:
 
     def get_payload_class(self, class_name: str):
         """Get a payload class by name."""
-        if not self.framework_loaded or not PYOBJC_AVAILABLE:
+        if not self.framework_loaded:
             return None
 
         if class_name not in self.payload_classes:
@@ -303,7 +294,7 @@ class PLJParser:
         self, uuid_data: Optional[bytes], string_id: Optional[str]
     ):
         """Build a payload identifier using PhotoLibraryServices classes."""
-        if not self.framework_loader.framework_loaded or not PYOBJC_AVAILABLE:
+        if not self.framework_loader.framework_loaded:
             # Fallback: use string representation
             if uuid_data and len(uuid_data) == 16:
                 return str(uuid.UUID(bytes=uuid_data))
@@ -549,7 +540,7 @@ class PLJParser:
 
     def get_raw_payload_attributes(self, payload) -> Optional[Dict[str, Any]]:
         """Extract raw payload attributes from a payload object."""
-        if not PYOBJC_AVAILABLE or not payload:
+        if not payload:
             return None
 
         try:
