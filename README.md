@@ -116,9 +116,9 @@ message JournalEntryHeader {
 }
 ```
 
-The protobuf message schema can be found in [pljournal.proto](proto/pljournal.proto)
+The protobuf message schema can be found in [pljournal.proto](pljournal.proto)
 
-These can be read with the script [plj_dump.py](python/plj_dump.py):
+These can be read with the script [plj_dump.py](plj_dump.py):
 
 ```
 $ python plj_dump.py ~/Pictures/Photos\ Library.photoslibrary/resources/journals/Keyword-snapshot.plj
@@ -141,7 +141,7 @@ $ python plj_dump.py ~/Pictures/Photos\ Library.photoslibrary/resources/journals
 }
 ```
 
-There is also an Objective-C implementation [plj_dump.m](objc/plj_dump.m).
+There is also an Objective-C implementation [plj_dump.m](plj_dump.m).
 
 ## Building and running the tools
 
