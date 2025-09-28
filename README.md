@@ -92,10 +92,12 @@ If you delete the Photos.sqlite database from a Photos library then open it, Pho
 
 I wanted to be able to read the contents of the `.plj` files. There is no public documentation of these and in fact there doesn't even appear to be an associated UTI on macOS describing what the files are. I used my [utitools](https://github.com/rhettbull/utitools) to verify this:
 
-```pycon
->>> import utitools
->>> utitools.uti_for_suffix(".plj")
->>>
+```
+$ uvx --python 3.13 --with utitools ipython
+In [1]: import utitools
+In [2]: utitools.uti_for_suffix(".plj")
+
+In [3]:
 ```
 
 After spending a few hours reverse engineering the files, I've determined the format consists of a proprietary header, followed by a protobuf header, then a binary plist (bplist) payload.
