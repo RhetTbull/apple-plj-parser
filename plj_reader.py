@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import json
 import plistlib
@@ -18,10 +17,13 @@ from google.protobuf.message import DecodeError
 
 from pljournal_pb2 import JournalEntryHeader as JournalEntryHeaderPB
 
-MAGIC = b"bplist00"
+MAGIC_BPLIST = b"bplist00"
 PREFIX_SIZE = 5
 HEADER_SENTINEL = 0x40
 HEADER_SIZE_MAX = 255  # header length stored in single byte
+
+# some fields are NSData that represent packed UUIDs
+PACKED_UUID_KEYS = {"assets", "curatedAssets", "representativeAssets"}
 
 
 @dataclass
@@ -68,17 +70,12 @@ def parse_header(raw: bytes) -> JournalHeader:
     )
 
 
-# ---------------------------------------------------------------------------
-# Payload decoding helpers
-# ---------------------------------------------------------------------------
-
-
 def _decode_bytes(data: bytes) -> Tuple[Any, str]:
     """Decode raw bytes into a richer Python object when possible."""
     if not data:
         return data, "empty"
 
-    if data.startswith(MAGIC):
+    if data.startswith(MAGIC_BPLIST):
         try:
             obj = plistlib.loads(data)
             return obj, "plist"
@@ -96,10 +93,10 @@ def _decode_bytes(data: bytes) -> Tuple[Any, str]:
     return data, "bytes"
 
 
-def _normalize(obj: Any) -> Any:
+def _normalize(obj: Any, key: str | None = None) -> Any:
     """Convert plistlib structures into JSON-friendly Python objects."""
     if isinstance(obj, dict):
-        return {str(key): _normalize(value) for key, value in obj.items()}
+        return {str(key): _normalize(value, key) for key, value in obj.items()}
     if isinstance(obj, list):
         return [_normalize(item) for item in obj]
     if isinstance(obj, tuple):
@@ -107,17 +104,36 @@ def _normalize(obj: Any) -> Any:
     if hasattr(plistlib, "Data") and isinstance(obj, plistlib.Data):
         return _normalize(obj.data)
     if isinstance(obj, bytes):
+        if not len(obj):
+            return ""
         decoded, kind = _decode_bytes(obj)
         if kind != "bytes":
             return _normalize(decoded)
-        return {
-            "__type__": "bytes",
-            "encoding": "base64",
-            "data": base64.b64encode(obj).decode("ascii"),
-        }
+        if key in PACKED_UUID_KEYS:
+            return decode_packed_uuids(decoded)
+        return {"__type__": "bytes", "encoding": "hex", "data": decoded.hex()}
     if isinstance(obj, dt.datetime):
         return obj.isoformat()
     return obj
+
+
+def decode_packed_uuids(data: bytes) -> list[str] | None:
+    """Decode packed UUID data into an array of UUID strings."""
+    if len(data) % 16 != 0:
+        return None
+
+    uuid_count = len(data) // 16
+    uuids = []
+
+    for i in range(uuid_count):
+        uuid_bytes = data[i * 16 : (i + 1) * 16]
+        try:
+            uuid_obj = uuid.UUID(bytes=uuid_bytes)
+            uuids.append(str(uuid_obj).upper())
+        except ValueError:
+            return None
+
+    return uuids
 
 
 @dataclass
@@ -172,11 +188,6 @@ class JournalRecord:
             "payloadKind": self.payload_kind,
             "payload": _normalize(self.payload) if self.payload is not None else None,
         }
-
-
-# ---------------------------------------------------------------------------
-# Record iterator
-# ---------------------------------------------------------------------------
 
 
 def iter_records(
@@ -247,11 +258,6 @@ def iter_records(
         raise RuntimeError(f"trailing {length - offset} bytes at end of file")
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Decode Photos PLJ journal files")
     parser.add_argument("path", help="Path to the .plj file")
@@ -276,7 +282,7 @@ def main() -> None:
         iterator = iter_records(args.path, decode_payload=not args.no_payload)
         for record in iterator:
             if args.json:
-                print(json.dumps(record.to_json_obj(), ensure_ascii=False))
+                print(json.dumps(record.to_json_obj(), ensure_ascii=False, indent=4))
             else:
                 print(record.summary(key_limit=None if args.no_payload else args.keys))
             if args.limit is not None and record.index + 1 >= args.limit:
