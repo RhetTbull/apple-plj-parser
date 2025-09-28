@@ -17,6 +17,12 @@ from google.protobuf.message import DecodeError
 
 from pljournal_pb2 import JournalEntryHeader as JournalEntryHeaderPB
 
+# /// script
+# dependencies = [
+#   "protobuf>=6.31.1",
+# ]
+# ///
+
 MAGIC_BPLIST = b"bplist00"
 PREFIX_SIZE = 5
 HEADER_SENTINEL = 0x40

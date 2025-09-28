@@ -411,7 +411,7 @@ The resuling [pljournal_pb2.py](pljournal_pb2.py) can be used in a python script
 For example,
 
 ```bash
-python plj_reader.py example_data/Album-snapshot.plj --limit 1 --json
+uv run plj_reader.py Album-snapshot.plj --limit 1 --json
 ```
 
 produces:
@@ -454,6 +454,8 @@ produces:
     }
 }
 ```
+
+Use `uv run plj_reader.py --help` for help text.
 
 Some keys in the decoded data for some of the file types contain binary data, represented as an NSData object. For example, album assets as shown above. The curatedAssets and representativeAssets keys also contain binary data. For those related to albums, I looked at the albums in Photos and noticed the length was always 16 bytes \* number of assets. These turned out to be packed UUIDs. The example utilities account for this and unpack the UUIDs.
 
@@ -516,3 +518,9 @@ There is also a python version of `plj_dump`, [plj_dump.py](plj_dump.py), that u
 ```bash
 uv run plj_dump.py ~/Pictures/Photos\ Library.photoslibrary/resources/journals/Album-snapshot.plj --head 1
 ```
+
+## Testing
+
+The python scripts include tests in [tests/](tests/)
+
+To run the tests: `python -m pytest`

@@ -3,16 +3,7 @@
 """
 PLJ (Plist Journal) File Parser
 
-A comprehensive tool for parsing Apple Photos .plj (plist journal) files
-with full binary data decoding support.
-
-Supports:
-- JSON output format
-- Binary plist decoding (mediaMetadata, photosGraphData)
-- UUID decoding (representativeAssets, curatedAssets, assets)
-- Command-line options (--head, --tail, --payload-class, --help)
-- Dynamic framework loading with fallback
-
+A tool for parsing Apple Photos .plj (plist journal) files.
 """
 
 # /// script
