@@ -416,7 +416,7 @@ python plj_reader.py example_data/Album-snapshot.plj --limit 1 --json
 
 produces:
 
-```
+```json
 {
     "index": 0,
     "offset": 0,
@@ -458,3 +458,61 @@ produces:
 Some keys in the decoded data for some of the file types contain binary data, represented as an NSData object. For example, album assets as shown above. The curatedAssets and representativeAssets keys also contain binary data. For those related to albums, I looked at the albums in Photos and noticed the length was always 16 bytes \* number of assets. These turned out to be packed UUIDs. The example utilities account for this and unpack the UUIDs.
 
 ### Using the native framework to parse `.plj` files
+
+`plj_reader.py` is able to parse the various `.plj` files by reading the protobuf messages and de-serializing the binary plist payloads. However I also wanted to see if I could read the files using the native framwork API calls. With the help of Claude Code (and passing it the various private framwork headers discussed above) I created [plj_dump.m](plj_dump.m) which loads the private framwork and uses the the various payload classes, such as `PLKeywordJournalEntryPayload`, to decode the data. This tool still uses manual parsing of the header and the protobuf message. Future work could explore using the native API for reading the entire file without any manual parsing.
+
+Compile `plj_dump.m` using the instructions [above](#objective-c-tools) and run it:
+
+```bash
+./plj_dump ~/Pictures/Photos\ Library.photoslibrary/resources/journals/Album-snapshot.plj --head 1
+```
+
+```json
+{
+  "entries" : [
+    {
+      "payload_version" : 1,
+      "entry_type" : 0,
+      "crc_matches" : true,
+      "payload_crc" : "0xf30a849e",
+      "payload_length" : 454,
+      "attributes" : {
+        "customSortAscending" : 1,
+        "importedByBundleIdentifier" : "com.apple.Photos",
+        "assets" : "sKMfdBvlSemb7SzdfSCG7UiExWkNZUWxqt0R97bjaG6FGigzxq1AepR+0QBAwYPDae\/vg1niQpWczvTA5RYdQQeSfddJlkpRp7MpR+owB4QBP0Cl90JB5oD1QOJFYUXNi0FqzRI0R7KADjC5Lq9Owg==",
+        "lastModifiedDate" : 1743805532.070169,
+        "cloudGUID" : "C67381CF-72B9-4D9B-939C-4AFBB64BA34D",
+        "prototype" : 0,
+        "title" : "test2",
+        "inTrash" : false,
+        "customSortKey" : 1,
+        "pinned" : 0,
+        "asset_count" : 7,
+        "kind" : 2,
+        "creationDate" : 1743805532.070169,
+        "assets_decoded" : [
+          "B0A31F74-1BE5-49E9-9BED-2CDD7D2086ED",
+          "4884C569-0D65-45B1-AADD-11F7B6E3686E",
+          "851A2833-C6AD-407A-947E-D10040C183C3",
+          "69EFEF83-59E2-4295-9CCE-F4C0E5161D41",
+          "07927DD7-4996-4A51-A7B3-2947EA300784",
+          "013F40A5-F742-41E6-80F5-40E2456145CD",
+          "8B416ACD-1234-47B2-800E-30B92EAF4EC2"
+        ]
+      },
+      "header_checksum" : "0x2e9b40",
+      "index" : 0
+    }
+  ],
+  "returned_entries" : 1,
+  "total_entries" : 169,
+  "payload_class" : "PLAlbumJournalEntryPayload",
+  "file_path" : "\/Users\/rhet\/Pictures\/Photos Library.photoslibrary\/resources\/journals\/Album-snapshot.plj"
+}
+```
+
+There is also a python version of `plj_dump`, [plj_dump.py](plj_dump.py), that uses pyobjc to implement `plj_dump.m` in python.
+
+```bash
+uv run plj_dump.py ~/Pictures/Photos\ Library.photoslibrary/resources/journals/Album-snapshot.plj --head 1
+```

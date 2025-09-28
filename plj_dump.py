@@ -13,8 +13,6 @@ Supports:
 - Command-line options (--head, --tail, --payload-class, --help)
 - Dynamic framework loading with fallback
 
-Author: Claude Code
-Version: 2.0
 """
 
 # /// script
