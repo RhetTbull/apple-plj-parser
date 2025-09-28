@@ -43,7 +43,9 @@ def test_dump(test_file):
 
 def test_dump_album_head():
     runner = CliRunner()
-    result = runner.invoke(main, [TEST_DIR + "/Album-snapshot.plj", "--limit", "1", "--json"])
+    result = runner.invoke(
+        main, [TEST_DIR + "/Album-snapshot.plj", "--limit", "1", "--json"]
+    )
     assert result.exit_code == 0
     results = json.loads(result.output)
     assert len(results) == 1
