@@ -382,7 +382,7 @@ It looks like all the tags with the execption of tag 3 is present. The additiona
 
 Looks like there's 5 bytes at beginning of protobuf data, always starts with 0x40 then 4 bytes
 
-The next step was to map the protobuf tags to the expected data from the `PLJournalEntryHeader` so I could create a protobuf message spec. This involved some trial and error. For example, tag 5 (`5:VARINT 380`) looked like it might be the payload length and this was easily verifiable by looking at the bplist data that followed in a hex editor, which was indeed 380 bytes long. For hex editors, I like [Hex Fiend](ZZZ) which is a nice light weight open source editor. [ImHex](ZZZ) is another more powerful editor designed for reverse engineering but with a steeper learning curve.
+The next step was to map the protobuf tags to the expected data from the `PLJournalEntryHeader` so I could create a protobuf message spec. This involved some trial and error. For example, tag 5 (`5:VARINT 380`) looked like it might be the payload length and this was easily verifiable by looking at the bplist data that followed in a hex editor, which was indeed 380 bytes long. For hex editors, I like [Hex Fiend](https://hexfiend.com) which is a nice light weight open source editor. [ImHex](https://github.com/WerWolv/ImHex) is another more powerful editor designed for reverse engineering but with a steeper learning curve.
 
 Additional trial and error was used to map the other tags, for example, tag 6 (`6:VARINT 1160857585`) is the CRC and this could be verified by computing the CRC of the payload to see that it matched the value in the tag.
 
