@@ -9,52 +9,52 @@ Apple Photos creates `.plj` files in `Photos Library.photoslibrary/resources/jou
 Backup up only the plist journal files is more efficient because incremental changes are stored to a small journal file (for example, `Asset-change.plj` which is periodically consolidated into a snapshot file (`Asset-snapshot.plj`). The small changes file doesn't take a lot of space on the backup volume. For example, on my Macbook, as of September 2025, the snapshot was created in April 2025:
 
 ```
-.rw-r--r-- rhet staff  20 MB Thu Sep 25 18:40:18 2025 Asset-change.plj
-.rw-r--r-- rhet staff 196 MB Sat Apr  5 05:59:53 2025 Asset-snapshot.plj
+.rw-r--r-- user staff  20 MB Thu Sep 25 18:40:18 2025 Asset-change.plj
+.rw-r--r-- user staff 196 MB Sat Apr  5 05:59:53 2025 Asset-snapshot.plj
 ```
 
 The full contents of the `journals` folder in a Photos library looks like this:
 
 ```
-.rw-r--r-- rhet staff  42 KB Wed Sep 24 07:20:41 2025 Album-change.plj
-.rw-r--r-- rhet staff 772 KB Sun Jun  8 08:29:26 2025 Album-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Wed Sep 24 07:20:41 2025 Album.plist
-.rw-r--r-- rhet staff  20 MB Thu Sep 25 18:40:18 2025 Asset-change.plj
-.rw-r--r-- rhet staff 196 MB Sat Apr  5 05:59:53 2025 Asset-snapshot.plj
-.rw-r--r-- rhet staff 532 B  Thu Sep 25 18:40:18 2025 Asset.plist
-.rw-r--r-- rhet staff   0 B  Fri Apr  4 16:44:53 2025 DeferredRebuildFace-change.plj
-.rw-r--r-- rhet staff 361 B  Fri Apr  4 16:44:59 2025 DeferredRebuildFace.plist
-.rw-r--r-- rhet staff 4.2 KB Sat Sep 20 10:47:45 2025 DetectedFace-change.plj
-.rw-r--r-- rhet staff  36 KB Sat Aug 16 01:01:04 2025 DetectedFace-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Sat Sep 20 10:47:45 2025 DetectedFace.plist
-.rw-r--r-- rhet staff 936 B  Tue Sep 23 11:00:27 2025 FetchingAlbum-change.plj
-.rw-r--r-- rhet staff 8.2 KB Sat Apr  5 05:59:24 2025 FetchingAlbum-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Tue Sep 23 11:00:27 2025 FetchingAlbum.plist
-.rw-r--r-- rhet staff   0 B  Fri Apr  4 16:45:00 2025 FileSystemVolume-change.plj
-.rw-r--r-- rhet staff 361 B  Fri Apr  4 16:45:00 2025 FileSystemVolume.plist
-.rw-r--r-- rhet staff  15 KB Wed Sep 24 07:20:41 2025 Folder-change.plj
-.rw-r--r-- rhet staff  11 KB Sun Sep 14 07:36:15 2025 Folder-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Wed Sep 24 07:20:41 2025 Folder.plist
-.rw-r--r-- rhet staff 555 B  Thu Sep 25 18:46:34 2025 HistoryToken.plist
-.rw-r--r-- rhet staff 2.0 KB Sun Aug 17 16:52:16 2025 ImportSession-change.plj
-.rw-r--r-- rhet staff 435 KB Sat Apr  5 05:59:25 2025 ImportSession-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Sun Aug 17 16:52:16 2025 ImportSession.plist
-.rw-r--r-- rhet staff 2.2 KB Wed Sep 24 05:45:06 2025 Keyword-change.plj
-.rw-r--r-- rhet staff 4.6 KB Sat Apr  5 05:59:24 2025 Keyword-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Wed Sep 24 05:45:06 2025 Keyword.plist
-.rw-r--r-- rhet staff 679 KB Tue Sep 23 04:17:12 2025 Memory-change.plj
-.rw-r--r-- rhet staff 5.5 MB Sat Apr  5 05:59:24 2025 Memory-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Tue Sep 23 04:17:12 2025 Memory.plist
-.rw-r--r-- rhet staff 5.2 KB Fri Aug  8 13:04:24 2025 MigrationHistory-change.plj
-.rw-r--r-- rhet staff 244 B  Fri Aug  8 13:04:24 2025 MigrationHistory.plist
-.rw-r--r-- rhet staff 2.4 KB Sat Sep 20 10:47:45 2025 Person-change.plj
-.rw-r--r-- rhet staff  41 KB Sat Aug 16 01:01:04 2025 Person-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Sat Sep 20 10:47:45 2025 Person.plist
-.rw-r--r-- rhet staff  35 B  Sun Sep  7 22:06:00 2025 ProjectAlbum-change.plj
-.rw-r--r-- rhet staff 4.7 KB Mon Aug 11 17:35:06 2025 ProjectAlbum-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Sun Sep  7 22:06:00 2025 ProjectAlbum.plist
-.rw-r--r-- rhet staff   0 B  Sat Sep 20 10:39:39 2025 SocialGroup-snapshot.plj
-.rw-r--r-- rhet staff 526 B  Sat Sep 20 10:39:39 2025 SocialGroup.plist
+.rw-r--r-- user staff  42 KB Wed Sep 24 07:20:41 2025 Album-change.plj
+.rw-r--r-- user staff 772 KB Sun Jun  8 08:29:26 2025 Album-snapshot.plj
+.rw-r--r-- user staff 526 B  Wed Sep 24 07:20:41 2025 Album.plist
+.rw-r--r-- user staff  20 MB Thu Sep 25 18:40:18 2025 Asset-change.plj
+.rw-r--r-- user staff 196 MB Sat Apr  5 05:59:53 2025 Asset-snapshot.plj
+.rw-r--r-- user staff 532 B  Thu Sep 25 18:40:18 2025 Asset.plist
+.rw-r--r-- user staff   0 B  Fri Apr  4 16:44:53 2025 DeferredRebuildFace-change.plj
+.rw-r--r-- user staff 361 B  Fri Apr  4 16:44:59 2025 DeferredRebuildFace.plist
+.rw-r--r-- user staff 4.2 KB Sat Sep 20 10:47:45 2025 DetectedFace-change.plj
+.rw-r--r-- user staff  36 KB Sat Aug 16 01:01:04 2025 DetectedFace-snapshot.plj
+.rw-r--r-- user staff 526 B  Sat Sep 20 10:47:45 2025 DetectedFace.plist
+.rw-r--r-- user staff 936 B  Tue Sep 23 11:00:27 2025 FetchingAlbum-change.plj
+.rw-r--r-- user staff 8.2 KB Sat Apr  5 05:59:24 2025 FetchingAlbum-snapshot.plj
+.rw-r--r-- user staff 526 B  Tue Sep 23 11:00:27 2025 FetchingAlbum.plist
+.rw-r--r-- user staff   0 B  Fri Apr  4 16:45:00 2025 FileSystemVolume-change.plj
+.rw-r--r-- user staff 361 B  Fri Apr  4 16:45:00 2025 FileSystemVolume.plist
+.rw-r--r-- user staff  15 KB Wed Sep 24 07:20:41 2025 Folder-change.plj
+.rw-r--r-- user staff  11 KB Sun Sep 14 07:36:15 2025 Folder-snapshot.plj
+.rw-r--r-- user staff 526 B  Wed Sep 24 07:20:41 2025 Folder.plist
+.rw-r--r-- user staff 555 B  Thu Sep 25 18:46:34 2025 HistoryToken.plist
+.rw-r--r-- user staff 2.0 KB Sun Aug 17 16:52:16 2025 ImportSession-change.plj
+.rw-r--r-- user staff 435 KB Sat Apr  5 05:59:25 2025 ImportSession-snapshot.plj
+.rw-r--r-- user staff 526 B  Sun Aug 17 16:52:16 2025 ImportSession.plist
+.rw-r--r-- user staff 2.2 KB Wed Sep 24 05:45:06 2025 Keyword-change.plj
+.rw-r--r-- user staff 4.6 KB Sat Apr  5 05:59:24 2025 Keyword-snapshot.plj
+.rw-r--r-- user staff 526 B  Wed Sep 24 05:45:06 2025 Keyword.plist
+.rw-r--r-- user staff 679 KB Tue Sep 23 04:17:12 2025 Memory-change.plj
+.rw-r--r-- user staff 5.5 MB Sat Apr  5 05:59:24 2025 Memory-snapshot.plj
+.rw-r--r-- user staff 526 B  Tue Sep 23 04:17:12 2025 Memory.plist
+.rw-r--r-- user staff 5.2 KB Fri Aug  8 13:04:24 2025 MigrationHistory-change.plj
+.rw-r--r-- user staff 244 B  Fri Aug  8 13:04:24 2025 MigrationHistory.plist
+.rw-r--r-- user staff 2.4 KB Sat Sep 20 10:47:45 2025 Person-change.plj
+.rw-r--r-- user staff  41 KB Sat Aug 16 01:01:04 2025 Person-snapshot.plj
+.rw-r--r-- user staff 526 B  Sat Sep 20 10:47:45 2025 Person.plist
+.rw-r--r-- user staff  35 B  Sun Sep  7 22:06:00 2025 ProjectAlbum-change.plj
+.rw-r--r-- user staff 4.7 KB Mon Aug 11 17:35:06 2025 ProjectAlbum-snapshot.plj
+.rw-r--r-- user staff 526 B  Sun Sep  7 22:06:00 2025 ProjectAlbum.plist
+.rw-r--r-- user staff   0 B  Sat Sep 20 10:39:39 2025 SocialGroup-snapshot.plj
+.rw-r--r-- user staff 526 B  Sat Sep 20 10:39:39 2025 SocialGroup.plist
 ```
 
 There are 3 files for each type of entity in the Photos database (for example, Assets, Albums, etc.): a `-snapshot.plj` file, `-change.plj` file, and a `.plist` file. The `.plist` file contains the following information which shows the date of the snapshot and the date data was coalesced, presumably from the `-change.plj` file.
@@ -100,6 +100,8 @@ In [2]: utitools.uti_for_suffix(".plj")
 In [3]:
 ```
 
+I would have expected these to have a UTI of `com.apple.property-list-journal` or something like that but they have no public UTI registered with the OS.
+
 After spending a few hours reverse engineering the files, I've determined the format consists of a proprietary header, followed by a protobuf header, then a binary plist (bplist) payload.
 
 - Magic Byte: 0x40
@@ -126,6 +128,8 @@ message JournalEntryHeader {
 }
 ```
 
+The protobuf message schema can be found in [pljournal.proto](proto/pljournal.proto)
+
 These can be read with the script [plj_dump.py](python/plj_dump.py):
 
 ```
@@ -149,8 +153,73 @@ $ python plj_dump.py ~/Pictures/Photos\ Library.photoslibrary/resources/journals
 }
 ```
 
+There is also an Objective-C implementation [plj_dump.m](objc/plj_dump.m).
+
 ## Building and running the tools
 
+### Python tools
+
+I use [uv](https://docs.astral.sh/uv/) for building and running the python tools.
+
+Create a virtual environment and activate it:
+```bash
+uv venv
+source .venv/bin/activate
+```
+
+Install the required dependencies:
+
+```bash
+uv pip install -r pyproject.toml --extra dev
+```
+
+To use the python version of the tool, run the following command to first build the python code that implements the protobuf spec:
+
+```bash
+python -m grpc_tools.protoc --proto_path=. --python_out=. journal.proto
+```
+
+Note: this is not necessary if you have not changed the protobuf spec as the `pljournal_pb2.py` file generated by the previous command is included in the repository.
+
+Run the python tool:
+```bash
+python plj_dump.py /path/to/file.plj [--head N] [--tail N]
+```
+
+### Objective-C tools
+
+```bash
+xcrun clang -fobjc-arc -ObjC \
+    -isysroot "$(xcrun --sdk macosx --show-sdk-path)" \
+    -framework Foundation -lz \
+    plj_dump.m -o plj_dump
+```
+
+Then run `plj_dump`:
+
+```bash
+./plj_dump /path/to/file.plj
+```
+
+To see help,
+```bash
+./plj_dump --help
+```
+
+```
+Usage: ./plj_dump <path_to_plj_file> [options]
+
+Options:
+  --head N             Output only the first N records
+  --tail N             Output only the last N records
+  --payload-class C    Specify payload class explicitly
+  --help               Show this help message
+
+Examples:
+  ./plj_dump Album-snapshot.plj
+  ./plj_dump Asset-change.plj --head 10
+  ./plj_dump Person-snapshot.plj --payload-class PLPersonJournalEntryPayload
+```
 
 ## Reverse engineering .plj files
 
@@ -305,10 +374,3 @@ Tag: 8, Wire Type: 4 - Error: Unsupported wire type 4
 ```
 
 For album assets, curatedAssets, and representativeAssets, these were binary data with no indication what they were. I looked at albums and noticed the length was always 16 bytes \* number of assets. They are packed UUIDs into a single NSData object.
-
-```bash
-xcrun clang -fobjc-arc -ObjC \
-    -isysroot "$(xcrun --sdk macosx --show-sdk-path)" \
-    -framework Foundation -lz \
-    objc/plj_dump.m -o objc/plj_dump
-```

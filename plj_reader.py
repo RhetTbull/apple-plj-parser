@@ -16,7 +16,7 @@ from typing import Any, Iterator, Optional, Tuple
 
 from google.protobuf.message import DecodeError
 
-from journal_pb2 import JournalEntryHeader as JournalEntryHeaderPB
+from pljournal_pb2 import JournalEntryHeader as JournalEntryHeaderPB
 
 MAGIC = b"bplist00"
 PREFIX_SIZE = 5
