@@ -280,13 +280,18 @@ def main() -> None:
 
     try:
         iterator = iter_records(args.path, decode_payload=not args.no_payload)
+        output = []
         for record in iterator:
             if args.json:
-                print(json.dumps(record.to_json_obj(), ensure_ascii=False, indent=4))
+                output.append(
+                    json.dumps(record.to_json_obj(), ensure_ascii=False, indent=4)
+                )
             else:
                 print(record.summary(key_limit=None if args.no_payload else args.keys))
             if args.limit is not None and record.index + 1 >= args.limit:
                 break
+        if args.json:
+            print("[" + ",\n".join(output) + "]")
     except Exception as exc:  # pragma: no cover
         raise SystemExit(f"error: {exc}")
 
